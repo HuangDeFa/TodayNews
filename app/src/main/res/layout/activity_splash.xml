@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.huangdefa.todaynews.Activity.SplashActivity">
+   <TextView
+       android:id="@+id/tv_countdown"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:textColor="#D3D3D3"
+       android:padding="3dp"
+       android:textSize="15sp"
+       android:text="1s跳过广告"
+       android:layout_alignParentRight="true"
+       android:layout_marginTop="40dp"
+       android:layout_marginRight="35dp"
+       android:background="@drawable/splash_tv_bg"
+       />
+<ImageView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:src="@drawable/splash_banner"
+    android:layout_centerHorizontal="true"
+    android:layout_alignParentBottom="true"
+    android:layout_marginBottom="25dp"
+    />
+</RelativeLayout>

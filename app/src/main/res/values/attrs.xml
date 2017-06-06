@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="TabItem">
+        <attr name="IconHeight" format="dimension"/>
+        <attr name="IconWidth" format="dimension"/>
+        <attr name="Icon" format="reference"/>
+        <attr name="TabName" format="string"/>
+        <attr name="TabNormalColor" format="color"/>
+        <attr name="TabSelectedColor" format="color"/>
+        <attr name="TabState">
+            <enum name="Normal" value="0"/>
+            <enum value="1" name="Selected"/>
+        </attr>
+        <attr name="TabTextSize" format="dimension"/>
+    </declare-styleable>
+</resources>
