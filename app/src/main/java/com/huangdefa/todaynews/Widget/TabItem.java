@@ -5,16 +5,16 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
+import android.support.annotation.UiThread;
 import android.support.v4.graphics.drawable.DrawableCompat;
+import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.view.MotionEvent;
 import android.view.View;
 
 import com.huangdefa.todaynews.R;
@@ -26,11 +26,15 @@ import com.huangdefa.todaynews.Utils.DimensionUtil;
 
 public class TabItem extends View {
     private Paint mNormalPaint;
-    private Paint mSelectedPaint;
+    private Paint mMessagePaint;
     private Drawable mIcon;
+    private Drawable mRefreshIcon;
     private float mIconHeight;
     private float mIconWidth;
     private boolean mState;
+
+
+    private boolean mTabMessageEnable;
     private String mTabName;
     private int mTabNormalColor;
     private float mTextSize;
@@ -67,6 +71,11 @@ public class TabItem extends View {
 
     public void setmState(boolean mState) {
         this.mState = mState;
+        if(!mState){
+            if(mStartRefresh){
+                stopRefresh();
+            }
+        }
         invalidate();
     }
 
@@ -93,7 +102,6 @@ public class TabItem extends View {
 
     public void setmSelectedColor(int mSelectedColor) {
         this.mSelectedColor = mSelectedColor;
-        mSelectedPaint.setColor(mSelectedColor);
     }
 
     private int mSelectedColor;
@@ -129,6 +137,8 @@ public class TabItem extends View {
         mTabNormalColor = typedArray.getColor(R.styleable.TabItem_TabNormalColor, Color.GRAY);
         mSelectedColor = typedArray.getColor(R.styleable.TabItem_TabSelectedColor, Color.RED);
         mTextSize = typedArray.getDimension(R.styleable.TabItem_TabTextSize, DimensionUtil.sp2px(context, 13f));
+        mTabMessageEnable = typedArray.getBoolean(R.styleable.TabItem_TabMessageEnable,false);
+        mRefreshIcon = typedArray.getDrawable(R.styleable.TabItem_TabRefreshIcon);
         typedArray.recycle();
 
         mNormalPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -136,10 +146,10 @@ public class TabItem extends View {
         mNormalPaint.setStyle(Paint.Style.STROKE);
         mNormalPaint.setTextSize(mTextSize);
 
-        mSelectedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mSelectedPaint.setColor(mSelectedColor);
-        mSelectedPaint.setStyle(Paint.Style.STROKE);
-        mSelectedPaint.setTextSize(mTextSize);
+        mMessagePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mMessagePaint.setColor(mSelectedColor);
+        mMessagePaint.setStyle(Paint.Style.FILL);
+        mMessagePaint.setTextSize(mTextSize-5);
         initDrawable();
 
     }
@@ -177,48 +187,96 @@ public class TabItem extends View {
         if(w>mIconWidth){
             mIcon.setBounds(0,0, (int) mIconWidth,h);
         }
+        if(mRefreshIcon!=null)
+        mRefreshIcon.setBounds(mIcon.getBounds());
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-       /* canvas.save();
-        canvas.translate(getWidth()/2,getHeight()-getPaddingBottom()-10-
-                Math.abs(mNormalPaint.getFontMetrics().ascent-mNormalPaint.getFontMetrics().descent)/2);
-        mIcon.draw(canvas);
-        canvas.restore();
-        canvas.save();
-        mNormalPaint.setColor(mState?mSelectedColor:mTabNormalColor);
-        canvas.translate(getWidth()/2,getHeight()*2/3);
-        canvas.drawText(mTabName,0,0,mNormalPaint);
-        canvas.restore();
-        canvas.drawRect(0,0,getWidth(),getHeight(),mSelectedPaint);*/
+
        mIcon.setBounds((int)(getPaddingLeft()+(getWidth()-mIconWidth)/2),getPaddingTop()+
                10,(int)(getPaddingLeft()+(getWidth()-mIconWidth)/2+mIconWidth),(int)(getPaddingTop()+10+mIconHeight));
         DrawableCompat.setTint(mIcon,mState?mSelectedColor:mTabNormalColor);
-        mIcon.draw(canvas);
+        if(!mStartRefresh) {
+            mIcon.draw(canvas);
+        }else {
+            canvas.save();
+            mRefreshIcon.setBounds(mIcon.getBounds());
+            canvas.rotate(mRrefreshDegree,mRefreshIcon.getBounds().centerX(),mRefreshIcon.getBounds().centerY());
+            mRefreshIcon.draw(canvas);
+            canvas.restore();
+        }
         Rect textBount=new Rect();
         mNormalPaint.setColor(mState?mSelectedColor:mTabNormalColor);
         mNormalPaint.getTextBounds(mTabName,0,mTabName.length(),textBount);
-        canvas.drawText(mTabName,(getWidth()-Math.abs(textBount.left-textBount.right))/2,getHeight()-5-getPaddingBottom()-Math.abs(textBount.top-textBount.bottom)/4,mNormalPaint);
-       // canvas.drawRect(0,0,getWidth(),getHeight(),mSelectedPaint);
-        mSelectedPaint.setTextSize(DimensionUtil.sp2px(getContext(),12));
-        mNormalPaint.getTextBounds("12",0,"12".length(),textBount);
-       /* canvas.drawRect(mIcon.getBounds(),mSelectedPaint);
-       float left=mIcon.getBounds().right-Math.abs(mIconWidth-mIcon.getBounds().width())/2-12;
-        float top=mIcon.getBounds().top-Math.abs(mIconHeight-mIcon.getBounds().height())/2;
-        RectF rect=new RectF(left,top,left+textBount.width(),
-                top+textBount.height());
-        canvas.drawRoundRect(rect,15,15,mSelectedPaint);
-        */
+        canvas.drawText(mTabName,(getWidth()-Math.abs(textBount.left-textBount.right))/2,
+                getHeight()-5-getPaddingBottom()-Math.abs(textBount.top-textBount.bottom)/4,mNormalPaint);
+
+        //绘制消息红点
+        if(mTabMessageEnable && !mStartRefresh)
+        drawMessage(canvas);
     }
 
-   /* @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        if(event.getAction()==MotionEvent.ACTION_UP){
-            mState=!mState;
-            invalidate();
+    public void setMessage(String message) {
+        mMessage = message;
+    }
+
+    public boolean isTabMessageEnable() {
+        return mTabMessageEnable;
+    }
+
+    private boolean mStartRefresh;
+    private int mRrefreshDegree;
+    @UiThread
+    public boolean startRefresh(){
+        if(!mStartRefresh&&!TextUtils.isEmpty(mMessage) && mTabMessageEnable){
+            mStartRefresh=true;
+            mRrefreshDegree=0;
+            postDelayed(mRefreshRunnable,20);
+            return true;
         }
-        return true;
-    }*/
+        return false;
+    }
+
+    @UiThread
+    public void stopRefresh(){
+        mStartRefresh=false;
+        mMessage=null;
+        mRrefreshDegree=0;
+        removeCallbacks(mRefreshRunnable);
+        invalidate();
+    }
+
+    private Runnable mRefreshRunnable=new Runnable() {
+        @Override
+        public void run() {
+            mRrefreshDegree+=6;
+            if(mRrefreshDegree>=360){
+                mRrefreshDegree=0;
+            }
+            invalidate();
+            postDelayed(mRefreshRunnable,20);
+        }
+    };
+
+    private String mMessage="99";
+
+    private int mMessageBoundRadius=31;
+
+    private void drawMessage(Canvas canvas) {
+        if(!TextUtils.isEmpty(mMessage)){
+            Rect bound=new Rect();
+            Rect iconBound=mIcon.getBounds();
+            mMessagePaint.getTextBounds(mMessage,0,mMessage.length(),bound);
+            Paint.FontMetricsInt fontMetricsInt=mMessagePaint.getFontMetricsInt();
+            float baseLineY=iconBound.top+mMessageBoundRadius+(fontMetricsInt.bottom-fontMetricsInt.top)/2-fontMetricsInt.bottom;
+            mMessagePaint.setColor(mSelectedColor);
+            canvas.drawCircle(iconBound.right-mMessageBoundRadius,iconBound.top+mMessageBoundRadius,
+                    mMessageBoundRadius,mMessagePaint);
+            mMessagePaint.setColor(Color.WHITE);
+            canvas.drawText(mMessage,iconBound.right-mMessageBoundRadius-bound.width()*1.0f/2,baseLineY,mMessagePaint);
+        }
+    }
+
 }

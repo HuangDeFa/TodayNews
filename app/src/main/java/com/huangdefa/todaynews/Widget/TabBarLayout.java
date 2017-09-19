@@ -8,6 +8,7 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
+import android.support.annotation.UiThread;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -21,6 +22,7 @@ public class TabBarLayout extends LinearLayout {
     private Paint linePaint;
     public interface TabBarItemListener{
        void onItemSelected(int index);
+       void onTabRefresh(int index);
     }
 
     public void setTabBarItemListener(TabBarItemListener tabBarItemListener) {
@@ -86,6 +88,11 @@ public class TabBarLayout extends LinearLayout {
         return handle;
     }
 
+    @UiThread
+    public void stopTabRefresh(){
+        ((TabItem)getChildAt(mCurrentSelectedIndex)).stopRefresh();
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if(event.getAction()==MotionEvent.ACTION_UP){
@@ -95,6 +102,11 @@ public class TabBarLayout extends LinearLayout {
                 getChildAt(i).getHitRect(rect);
                if(rect.contains((int)event.getX(),(int)event.getY())){
                    if(mCurrentSelectedIndex==i){
+                       if(((TabItem)getChildAt(mCurrentSelectedIndex)).startRefresh()){
+                           if(tabBarItemListener!=null){
+                               tabBarItemListener.onTabRefresh(mCurrentSelectedIndex);
+                           }
+                       }
                        break;
                    }else {
                        ((TabItem)getChildAt(mCurrentSelectedIndex)).setmState(false);
