@@ -60,7 +60,8 @@ public class MainPageFragment extends Fragment {
     }
 
     private void initView() {
-
+       int statusBarHeight = ViewUtil.getStatusBarHeight(getContext());
+       getView().setPadding(0,statusBarHeight,0,0);
         mHorizontalTabLayout = ViewUtil.findViewById(getView(), R.id.main_page_header_tab);
         mSuperViewpager = ViewUtil.findViewById(getView(), R.id.main_page_content_viewpager);
 

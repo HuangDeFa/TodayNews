@@ -71,6 +71,8 @@ public class HorizontalTabLayout extends HorizontalScrollView implements ViewPag
             public void onClick(View v) {
                 if(mViewPager!=null) {
                     mViewPager.setCurrentItem(i,true);
+                }else {
+                   onPageSelected(i);
                 }
                 onClickToScroll=true;
                 smoothIndicatorToCenter(i,0);

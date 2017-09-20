@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import com.huangdefa.todaynews.Fragment.FragmentManager;
@@ -22,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         changeStatusBarColor(0);
         FragmentManager.getManager().init(getSupportFragmentManager(), R.id.main_content);
         FragmentManager.getManager().showFragment(0);
@@ -61,10 +63,9 @@ public class MainActivity extends AppCompatActivity {
     private void changeStatusBarColor(int tabIndex) {
 
         int color = generateStatusBarColor(tabIndex);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+       /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(color);
-        } else {
+        } else*/ {
             ViewGroup decorView = (ViewGroup) getWindow().getDecorView();
             if (statusBarView == null) {
                 statusBarView = new View(this);
@@ -84,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
             case 2:
                 return Color.rgb(190, 190, 190);
             case 3:
-                return Color.rgb(55, 55, 55);
+                return Color.TRANSPARENT;
         }
         return 0;
     }
