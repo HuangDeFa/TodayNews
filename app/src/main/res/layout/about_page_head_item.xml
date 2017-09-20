@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="210dp"
+             >
+ <LinearLayout
+     android:layout_width="match_parent"
+     android:layout_height="150dp"
+     android:background="#373737"
+     >
+     <TextView
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+         android:textSize="16sp"
+         android:layout_marginTop="20dp"
+         android:background="@null"
+         android:gravity="center"
+         android:text="登录推荐更精准"
+         android:textColor="@android:color/white"
+         />
+ </LinearLayout>
+<LinearLayout
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    >
+    <TextView
+        android:layout_weight="1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:drawableTop="@drawable/favoriteicon_profile"
+        android:drawablePadding="10dp"
+        android:text="收藏"
+        android:gravity="center"
+        />
+    <TextView
+        android:layout_weight="1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:drawableTop="@drawable/favoriteicon_profile"
+        android:drawablePadding="10dp"
+        android:text="历史"
+        android:gravity="center"
+        />
+    <TextView
+        android:layout_weight="1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:drawableTop="@drawable/favoriteicon_profile"
+        android:drawablePadding="10dp"
+        android:text="夜间"
+        android:gravity="center"
+        />
+</LinearLayout>
+</LinearLayout>

@@ -18,4 +18,11 @@
     <declare-styleable name="HorizontalTabLayout">
         <attr name="VisualItemCount" format="integer"/>
     </declare-styleable>
+    <declare-styleable name="ColorChangeTextView">
+        <attr name="TextChangeColor" format="color"/>
+        <attr name="TextChangDirection">
+            <enum name="RTL" value="1"/>
+            <enum name="LTR" value="2"/>
+        </attr>
+    </declare-styleable>
 </resources>

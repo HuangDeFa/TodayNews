@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.View;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 
@@ -16,7 +18,8 @@ import com.huangdefa.todaynews.R;
  * 水平滚动的TabLayout
  */
 
-public class HorizontalTabLayout extends HorizontalScrollView implements ViewPager.OnPageChangeListener {
+public class HorizontalTabLayout extends HorizontalScrollView implements ViewPager.OnPageChangeListener{
+    private static final String TAG=HorizontalTabLayout.class.getSimpleName();
     private LinearLayout mItemsContainer;
     private HorizontalScrollBaseAdapter mAdapter;
     private int mVisualItemCount;
@@ -53,8 +56,26 @@ public class HorizontalTabLayout extends HorizontalScrollView implements ViewPag
        mItemsContainer.removeAllViews();
         final int count=mAdapter.getCount();
         for(int i=0;i<count;i++){
-            mItemsContainer.addView(mAdapter.getView(i,mItemsContainer));
+            View view=mAdapter.getView(i,mItemsContainer);
+            mItemsContainer.addView(view);
+            setIndicatorClick(i,view);
         }
+    }
+
+    private boolean onClickToScroll;
+    private int mCurrentItemPosition;
+
+    private void setIndicatorClick(final int i, View view) {
+        view.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mViewPager!=null) {
+                    mViewPager.setCurrentItem(i,true);
+                }
+                onClickToScroll=true;
+                smoothIndicatorToCenter(i,0);
+            }
+        });
     }
 
     public void setAdapter(HorizontalScrollBaseAdapter adapter, ViewPager viewPager){
@@ -74,6 +95,7 @@ public class HorizontalTabLayout extends HorizontalScrollView implements ViewPag
             }
         }
     }
+
 
     /**
      *  获取Item的宽度
@@ -100,16 +122,44 @@ public class HorizontalTabLayout extends HorizontalScrollView implements ViewPag
 
     @Override
     public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+        if(onClickToScroll) return;
+         View child = mItemsContainer.getChildAt(position);
+        if(positionOffset>0){
+            if(child instanceof  ColorChangeTextView){
+                ColorChangeTextView textView = (ColorChangeTextView) child;
+                textView.setChangeColorDirection(ColorChangeTextView.DIRECTION_RTL);
+                textView.setChangeRatios(1-positionOffset);
 
+                textView = (ColorChangeTextView) mItemsContainer.getChildAt(position+1);
+                textView.setChangeColorDirection(ColorChangeTextView.DIRECTION_LTR);
+                textView.setChangeRatios(positionOffset);
+            }
+        }
+        smoothIndicatorToCenter(position,positionOffset);
+        Log.d(TAG,"scrolled--> position: "+position+" offset: "+positionOffset +" positionOffsetPixels: "+positionOffsetPixels);
+    }
+
+    private void smoothIndicatorToCenter(int position,float positionOffset){
+        //将整个item居中
+        int offset= (int) ((position+positionOffset)*mItemWidth);
+        // 原始的左边的偏移量
+        int originLeftOffset = (getWidth()-mItemWidth)/2;
+        smoothScrollTo(offset-originLeftOffset,0);
     }
 
     @Override
     public void onPageSelected(int position) {
-
+        ColorChangeTextView textView=(ColorChangeTextView) mItemsContainer.getChildAt(mCurrentItemPosition);
+        textView.setChangeRatios(0);
+         mCurrentItemPosition=position;
+        textView=(ColorChangeTextView) mItemsContainer.getChildAt(mCurrentItemPosition);
+        textView.setChangeRatios(1);
     }
 
     @Override
     public void onPageScrollStateChanged(int state) {
-
+      if(state==ViewPager.SCROLL_STATE_IDLE){
+          if(onClickToScroll)onClickToScroll=false;
+      }
     }
 }
