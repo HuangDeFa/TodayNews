@@ -3,6 +3,7 @@ package com.huangdefa.todaynews.Net;
 import android.content.Context;
 import android.support.v4.util.ArrayMap;
 
+import java.util.Date;
 import java.util.Map;
 
 import io.reactivex.Observable;
@@ -64,10 +65,10 @@ public class ApiManager {
         Map<String,String> map=new ArrayMap<>();
         map.put("refer","1");
         map.put("count","20");
-        map.put("min_behot_time","0");
-        map.put("last_refresh_sub_entrance_interval","0");
+        map.put("min_behot_time",new Date().getTime()+"");
+        map.put("last_refresh_sub_entrance_interval",new Date().getTime()+"");
         map.put("loc_mode","1");
-        map.put("loc_time","1");
+        map.put("loc_time",new Date().getTime()+"");
         map.put("latitude","");
         map.put("longitude","");
         map.put("city","");
@@ -75,18 +76,18 @@ public class ApiManager {
         map.put("lac","");
         map.put("cid","");
         map.put("cp","");
+        map.put("plugin_enable","3");
         map.put("iid","0123456789");
         map.put("device_id","12345678992");
         map.put("ac","wifi");
-        map.put("channel","");
+        map.put("channel","baidu");
         map.put("aid","");
-        map.put("app_name","");
-        map.put("version_code","");
-        map.put("version_name","");
-        map.put("device_platform","");
+        map.put("app_name","news_article");
+        map.put("version_code","636");
+        map.put("version_name","6.3.6");
+        map.put("device_platform","android");
         map.put("ab_version","");
         map.put("ab_client","");
-        map.put("ab_group","");
         map.put("ab_feature","");
         map.put("abflag","3");
         map.put("ssmix","a");
@@ -99,8 +100,9 @@ public class ApiManager {
         map.put("manifest_version_code","");
         map.put("resolution","");
         map.put("dpi","");
-        map.put("update_version_code","");
-        map.put("_rticket","");
+        map.put("update_version_code","6368");
+        map.put("_rticket",new Date().getTime()+"");
+        map.put("plugin","2431");
         return map;
     }
 
