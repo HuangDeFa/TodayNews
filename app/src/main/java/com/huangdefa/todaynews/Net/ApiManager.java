@@ -2,14 +2,23 @@ package com.huangdefa.todaynews.Net;
 
 import android.content.Context;
 import android.support.v4.util.ArrayMap;
+import android.util.SparseArray;
 
+import com.google.gson.Gson;
+import com.huangdefa.todaynews.Model.ChannelModel;
+import com.huangdefa.todaynews.Model.ChannelViewModel;
+import com.huangdefa.todaynews.Model.ContentModel;
+import com.huangdefa.todaynews.Model.MovieModel;
+
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 import io.reactivex.Observable;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.functions.Function;
 import okhttp3.OkHttpClient;
-import okhttp3.RequestBody;
-import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
@@ -22,11 +31,22 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ApiManager {
 
+     static Map<String , String> HostList;
+     final static String HOST_HEADER="hostheader";
+     final static String TOUTIAO_CHANNEL="toutiao_channel";
+     final static String DOUBAN="douban";
+    //可以添加需要baseURl
+    static {
+        HostList=new HashMap<>();
+        HostList.put(TOUTIAO_CHANNEL,"http://lf.snssdk.com/");
+        HostList.put(DOUBAN,"https://api.douban.com/");
+    }
+
     private ApiService mApiService;
     public ApiManager(){
 
         mHttpClient=new OkHttpClient.Builder()
-                .addInterceptor(new BaseInteroper())
+                .addInterceptor(new BaseInterceptor())
                 .addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC))
                 .build();
         mRetrofit=new Retrofit.Builder()
@@ -49,9 +69,26 @@ public class ApiManager {
         sContext=context;
     }
 
-     public Observable<ResponseBody> getChannel(String channel){
+
+     public Observable<ChannelViewModel> getChannel(String channel){
        Map<String,String> paramsMap= preExecute();
-       return  mApiService.getChannel(channel,paramsMap);
+       return  mApiService.getChannel(channel,paramsMap).map(new Function<ChannelModel, ChannelViewModel>() {
+           @Override
+           public ChannelViewModel apply(@NonNull ChannelModel channelModel) throws Exception {
+               ChannelViewModel viewModel=new ChannelViewModel();
+               viewModel.ChannelModel=channelModel;
+               viewModel.ContentModels=new ArrayList<ContentModel>();
+               Gson gson=new Gson();
+               for (ChannelModel.Data data : channelModel.data) {
+                   viewModel.ContentModels.add(gson.fromJson(data.content,ContentModel.class));
+               }
+               return viewModel;
+           }
+       });
+    }
+
+    public Observable<MovieModel> getMovie(){
+        return mApiService.getTop250Movie();
     }
 
     //http://is.snssdk.com/api/news/feed/v51/?category=news_hot&refer=1&count=20

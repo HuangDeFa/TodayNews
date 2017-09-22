@@ -1,3 +1,5 @@
+import android.os.SystemClock;
+
 import com.google.gson.Gson;
 import com.huangdefa.todaynews.Model.ChannelModel;
 import com.huangdefa.todaynews.Model.ChannelViewModel;
@@ -17,9 +19,14 @@ import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
+import okhttp3.HttpUrl;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
@@ -45,25 +52,17 @@ public class AppUnitTest {
 
     @Test
     public void getChannel(){
-        new ApiManager().getChannel("news_hot").subscribe(new Observer<ResponseBody>() {
+        new ApiManager().getChannel("news_hot").subscribe(new Observer<ChannelViewModel>() {
             @Override
             public void onSubscribe(@NonNull Disposable d) {
 
             }
 
             @Override
-            public void onNext(@NonNull ResponseBody responseBody) {
+            public void onNext(@NonNull ChannelViewModel responseBody) {
                 try {
-                    Gson gson= new Gson();
-                    ChannelViewModel channelViewModel =new ChannelViewModel();
-                    channelViewModel.ChannelModel=gson.fromJson(responseBody.string(), ChannelModel.class);
-                    channelViewModel.ContentModels=new ArrayList<ContentModel>();
-                    for (ChannelModel.Data data : channelViewModel.ChannelModel.data) {
-                        ContentModel contentModel= gson.fromJson(data.content,ContentModel.class);
-                        channelViewModel.ContentModels.add(contentModel);
-                    }
-                    List<ContentModel> contentModels = channelViewModel.ContentModels;
-                } catch (IOException e) {
+                    ChannelViewModel viewModel=responseBody;
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -80,12 +79,57 @@ public class AppUnitTest {
         });
     }
 
+    @Test
+    public void apiManagerTest(){
+        ApiManager apiManager=new ApiManager();;
+        apiManager.getChannel("new_host").subscribe(new Observer<ChannelViewModel>() {
+            @Override
+            public void onSubscribe(@NonNull Disposable d) {
+
+            }
+
+            @Override
+            public void onNext(@NonNull ChannelViewModel channelViewModel) {
+                System.out.print(channelViewModel);
+            }
+
+            @Override
+            public void onError(@NonNull Throwable e) {
+                System.out.print(e.getMessage());
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        });
+
+        apiManager.getMovie().subscribe(new Consumer<MovieModel>() {
+            @Override
+            public void accept(MovieModel movieModel) throws Exception {
+                System.out.print(movieModel);
+            }
+        });
+    }
+
     /**
      * 使用retrofit
      */
     @Test public void retrofitTest(){
         OkHttpClient okHttpClient=new OkHttpClient.Builder()
                 .connectTimeout(10, TimeUnit.SECONDS)
+                .addInterceptor(new Interceptor() {
+                    @Override
+                    public Response intercept(Chain chain) throws IOException {
+                        Request oldRequest = chain.request();
+                        Request.Builder request = oldRequest.newBuilder();
+                        HttpUrl.Builder urlBuilder=oldRequest.url().newBuilder();
+                        urlBuilder.addQueryParameter("start","0");
+                        urlBuilder.addQueryParameter("count","10");
+                        request.url(urlBuilder.build());
+                        return chain.proceed(request.build());
+                    }
+                })
                 .addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
                 .build();
         Retrofit retrofit=new Retrofit.Builder()
