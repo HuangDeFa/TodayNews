@@ -3,8 +3,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.huangdefa.todaynews.Fragment.AboutFragment">
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/about_page_content"
+    <com.huangdefa.todaynews.Widget.PullToRefreshLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent">
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/about_page_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </com.huangdefa.todaynews.Widget.PullToRefreshLayout>
 </FrameLayout>

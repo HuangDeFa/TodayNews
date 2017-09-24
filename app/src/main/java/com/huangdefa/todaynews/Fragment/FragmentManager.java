@@ -30,6 +30,7 @@ public class FragmentManager {
     public FragmentManager init(android.support.v4.app.FragmentManager manager, @IdRes int contentId) {
         this.mManager = manager;
         this.mContentId = contentId;
+        mCurrentTabIndex=-1;
         return this;
     }
 
@@ -54,12 +55,10 @@ public class FragmentManager {
             if(mCurrentTabIndex==-1) {
                 this.mManager.beginTransaction()
                         .add(mContentId, fragment, tabIndex + "")
-                        .addToBackStack(null)
                         .commit();
             }else {
                 this.mManager.beginTransaction()
                         .add(mContentId, fragment, tabIndex + "")
-                        .addToBackStack(null)
                         .hide(this.mManager.findFragmentByTag(mCurrentTabIndex + ""))
                         .commit();
             }
